@@ -92,6 +92,10 @@ def build_data_generators(augment: bool = True) -> ImageDataGenerator:
             vertical_flip=True,
         )
     else:
+<<<<<<< HEAD
+=======
+
+>>>>>>> 79d4f0fe7ca39e5fc4e251f86e7b7f0d6c61ed8c
         return ImageDataGenerator(
             rescale=1./255
         )
