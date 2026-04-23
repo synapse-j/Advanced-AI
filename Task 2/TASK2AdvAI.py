@@ -22,9 +22,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 DATASET_PATH = Path(kagglehub.dataset_download("muhammad0subhan/fruit-and-vegetable-disease-healthy-vs-rotten"))
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
-BATCH_SIZE = 32
-EPOCHS = 20
-N_FOLDS = 5
+BATCH_SIZE = 64
+EPOCHS = 14
+N_FOLDS = 3
 RANDOM_SEED = 42
 
 GRADE_THRESHOLDS = {
@@ -36,7 +36,8 @@ CLASS_NAMES = []
 
 
 def load_dataset_metadata(dataset_path: Path) -> pd.DataFrame:
-
+    # Walk dataset directory and return a DataFrame with columns: filepath, label, category, condition
+    print("debug statement - load_dataset_metadata")
     data = []
     base_path = dataset_path / "Fruit And Vegetable Diseases Dataset"
 
@@ -62,15 +63,16 @@ def load_dataset_metadata(dataset_path: Path) -> pd.DataFrame:
 
 
 def explore_dataset(df: pd.DataFrame) -> None:
+    # Print class distribution and plot sample images per category
+    print("debug statement - explore_dataset")
     os.makedirs("results", exist_ok=True)
+
     print("Null values per column:")
     print(df.isnull().sum())
 
-    # class distribution
     print("\nImage count per category and condition:")
     print(df.groupby(["category", "condition"]).size().reset_index(name="count").to_string(index=False))
 
-    # bar chart
     counts = df.groupby(["category", "condition"]).size().unstack()
     counts.plot(kind="bar", figsize=(14, 6), title="Image Count per Category")
     plt.xticks(rotation=45, ha="right")
@@ -78,20 +80,11 @@ def explore_dataset(df: pd.DataFrame) -> None:
     plt.tight_layout()
     plt.savefig("results/class_distribution.png")
     plt.show()
-    '''' Code not needed for normal epoc, used to intially check for potential image corruption
-    print("\nCorrupted Image Check")
-    corrupt = []
-    for filepath in df["filepath"]:
-        try:
-            img = tf.keras.preprocessing.image.load_img(filepath)
-        except Exception:
-            corrupt.append(filepath)
-    print(f"[INFO] Corrupt images found: {len(corrupt)}")
-    pass
-    '''
 
 
 def build_data_generators(augment: bool = True) -> ImageDataGenerator:
+    # Return an ImageDataGenerator — with augmentation for training, rescale only for validation
+    print("debug statement - build_data_generators")
     if augment:
         return ImageDataGenerator(
             rescale=1./255,
@@ -99,14 +92,14 @@ def build_data_generators(augment: bool = True) -> ImageDataGenerator:
             vertical_flip=True,
         )
     else:
-        
         return ImageDataGenerator(
             rescale=1./255
         )
-    pass
 
 
 def preprocess_image(image_path: str) -> np.ndarray:
+    # Load a single image, resize, normalise and return as array shaped (1, H, W, 3)
+    print("debug statement - preprocess_image")
     image = tf.keras.preprocessing.image.load_img(image_path, target_size=(IMG_HEIGHT, IMG_WIDTH))
     img_arr = tf.keras.preprocessing.image.img_to_array(image)
     img_arr = img_arr / 255.0
@@ -114,32 +107,48 @@ def preprocess_image(image_path: str) -> np.ndarray:
     return img_arr
 
 
-def build_cnn_model(num_classes: int) -> tf.keras.Model:
-    model = models.Sequential([
-        # 1
-        layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
-        layers.BatchNormalization(),
-        layers.MaxPooling2D(2, 2),
-        layers.Dropout(0.25),
+def build_cnn_model(num_classes: int, model_type: str = "cnn") -> tf.keras.Model:
+    print("debug statement - build_cnn_model")
+    if model_type == "resnet":
+        base_model = tf.keras.applications.ResNet50(
+            weights="imagenet",
+            include_top=False,
+            input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)
+        )
+        base_model.trainable = True
+        for layer in base_model.layers[:-20]:
+            layer.trainable = False
 
-        # 2
-        layers.Conv2D(64, (3, 3), activation="relu"),
-        layers.BatchNormalization(),
-        layers.MaxPooling2D(2, 2),
-        layers.Dropout(0.25),
+        model = models.Sequential([
+            base_model,
+            layers.GlobalAveragePooling2D(),
+            layers.Dense(256, activation="relu"),
+            layers.Dropout(0.5),
+            layers.Dense(num_classes, activation="softmax")
+        ])
 
-        # 3
-        layers.Conv2D(128, (3, 3), activation="relu"),
-        layers.BatchNormalization(),
-        layers.MaxPooling2D(2, 2),
-        layers.Dropout(0.25),
+    else:
+        model = models.Sequential([
+            layers.Conv2D(32, (3, 3), activation="relu", input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D(2, 2),
+            layers.Dropout(0.25),
 
-        # Connected
-        layers.Flatten(),
-        layers.Dense(256, activation="relu"),
-        layers.Dropout(0.5),
-        layers.Dense(num_classes, activation="softmax")
-    ])
+            layers.Conv2D(64, (3, 3), activation="relu"),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D(2, 2),
+            layers.Dropout(0.25),
+
+            layers.Conv2D(128, (3, 3), activation="relu"),
+            layers.BatchNormalization(),
+            layers.MaxPooling2D(2, 2),
+            layers.Dropout(0.25),
+
+            layers.Flatten(),
+            layers.Dense(256, activation="relu"),
+            layers.Dropout(0.5),
+            layers.Dense(num_classes, activation="softmax")
+        ])
 
     model.compile(
         optimizer="adam",
@@ -150,8 +159,9 @@ def build_cnn_model(num_classes: int) -> tf.keras.Model:
     return model
 
 
-def train_with_kfold(df: pd.DataFrame, num_classes: int) -> list[dict]:
-
+def train_with_kfold(df: pd.DataFrame, num_classes: int, model_type: str = "cnn") -> list[dict]:
+    # Run Stratified K-Fold training, return list of fold metrics
+    print("debug statement - train_with_kfold")
     os.makedirs("models", exist_ok=True)
 
     from sklearn.model_selection import train_test_split
@@ -180,7 +190,7 @@ def train_with_kfold(df: pd.DataFrame, num_classes: int) -> list[dict]:
             target_size=(IMG_HEIGHT, IMG_WIDTH), batch_size=BATCH_SIZE, class_mode="categorical"
         )
 
-        model = build_cnn_model(num_classes)
+        model = build_cnn_model(num_classes, model_type=model_type)
 
         early_stop = callbacks.EarlyStopping(patience=5, restore_best_weights=True)
         checkpoint = callbacks.ModelCheckpoint(
@@ -209,60 +219,197 @@ def train_with_kfold(df: pd.DataFrame, num_classes: int) -> list[dict]:
 
 def summarise_kfold_results(fold_results: list[dict]) -> pd.DataFrame:
     # Return a DataFrame summarising mean and std of accuracy and loss across folds
-    pass
+    print("debug statement - summarise_kfold_results")
+    summary = pd.DataFrame([{
+        "fold": r["fold"],
+        "val_accuracy": r["val_accuracy"],
+        "val_loss": r["val_loss"]
+    } for r in fold_results])
+
+    print("\n[INFO] K-Fold Summary:")
+    print(summary.to_string(index=False))
+    print(f"\nMean Accuracy : {summary['val_accuracy'].mean():.4f} ± {summary['val_accuracy'].std():.4f}")
+    print(f"Mean Loss     : {summary['val_loss'].mean():.4f} ± {summary['val_loss'].std():.4f}")
+
+    summary.plot(x="fold", y="val_accuracy", kind="bar", title="Accuracy per Fold", legend=False)
+    plt.ylabel("Accuracy")
+    plt.xlabel("Fold")
+    plt.xticks(rotation=0)
+    plt.tight_layout()
+    plt.savefig("results/kfold_accuracy.png")
+    plt.show()
+
+    return summary
 
 
 def evaluate_model(model: tf.keras.Model, test_generator) -> dict:
     # Evaluate model on test set, return accuracy, loss, classification report, confusion matrix
-    pass
+    print("debug statement - evaluate_model")
+    test_loss, test_acc = model.evaluate(test_generator)
+    print(f"\n[INFO] Test Accuracy: {test_acc:.4f} | Test Loss: {test_loss:.4f}")
+
+    predictions = model.predict(test_generator)
+    y_pred = np.argmax(predictions, axis=1)
+    y_true = test_generator.classes
+
+    report = classification_report(y_true, y_pred, target_names=test_generator.class_indices.keys())
+    print("\n[INFO] Classification Report:")
+    print(report)
+
+    cm = confusion_matrix(y_true, y_pred)
+    plot_confusion_matrix(cm, list(test_generator.class_indices.keys()))
+
+    return {
+        "test_accuracy": test_acc,
+        "test_loss": test_loss,
+        "classification_report": report,
+        "confusion_matrix": cm
+    }
 
 
 def plot_training_history(history, fold: int) -> None:
     # Plot and save accuracy and loss curves for a given fold
-    pass
+    print("debug statement - plot_training_history")
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 4))
+
+    ax1.plot(history["accuracy"], label="Train Accuracy")
+    ax1.plot(history["val_accuracy"], label="Val Accuracy")
+    ax1.set_title(f"Fold {fold} - Accuracy")
+    ax1.set_xlabel("Epoch")
+    ax1.set_ylabel("Accuracy")
+    ax1.legend()
+
+    ax2.plot(history["loss"], label="Train Loss")
+    ax2.plot(history["val_loss"], label="Val Loss")
+    ax2.set_title(f"Fold {fold} - Loss")
+    ax2.set_xlabel("Epoch")
+    ax2.set_ylabel("Loss")
+    ax2.legend()
+
+    plt.tight_layout()
+    plt.savefig(f"results/fold_{fold}_history.png")
+    plt.show()
 
 
 def plot_confusion_matrix(cm: np.ndarray, class_names: list[str]) -> None:
     # Plot and save a labelled confusion matrix heatmap
-    pass
+    print("debug statement - plot_confusion_matrix")
+    fig, ax = plt.subplots(figsize=(12, 10))
+
+    im = ax.imshow(cm, interpolation="nearest", cmap=plt.cm.Blues)
+    plt.colorbar(im)
+
+    ax.set_xticks(np.arange(len(class_names)))
+    ax.set_yticks(np.arange(len(class_names)))
+    ax.set_xticklabels(class_names, rotation=45, ha="right")
+    ax.set_yticklabels(class_names)
+
+    for i in range(cm.shape[0]):
+        for j in range(cm.shape[1]):
+            ax.text(j, i, str(cm[i, j]), ha="center", va="center", color="black")
+
+    ax.set_xlabel("Predicted Label")
+    ax.set_ylabel("True Label")
+    ax.set_title("Confusion Matrix")
+
+    plt.tight_layout()
+    plt.savefig("results/confusion_matrix.png")
+    plt.show()
 
 
 def compute_quality_scores(model: tf.keras.Model, image_path: str) -> dict:
     # Run inference on an image and return color, size, ripeness scores, grade, and recommended action
-    pass
+    print("debug statement - compute_quality_scores")
+    img_arr = preprocess_image(image_path)
+
+    predictions = model.predict(img_arr, verbose=0)
+    healthy_confidence = float(predictions[0][0]) * 100
+
+    color = min(100, healthy_confidence * 1.0)
+    size = min(100, healthy_confidence * 0.95)
+    ripeness = min(100, healthy_confidence * 0.90)
+
+    overall = round((color + size + ripeness) / 3, 2)
+    grade, action = assign_grade(color, size, ripeness)
+
+    return {
+        "color": round(color, 2),
+        "size": round(size, 2),
+        "ripeness": round(ripeness, 2),
+        "overall": overall,
+        "grade": grade,
+        "action": action
+    }
 
 
 def assign_grade(color: float, size: float, ripeness: float) -> tuple[str, str]:
     # Compare scores against thresholds and return (grade, action)
-    pass
+    print("debug statement - assign_grade")
+    if color >= 75 and size >= 80 and ripeness >= 70:
+        return "A", "Stock normally"
+    elif color >= 65 and size >= 70 and ripeness >= 60:
+        return "B", "Apply discount"
+    else:
+        return "C", "Remove from inventory"
 
 
 def update_inventory(product_id: str, grade: str, quantity: int) -> dict:
     # Build and return an inventory update payload based on grade
-    pass
+    print("debug statement - update_inventory")
+    discount = {"A": 0, "B": 20, "C": 100}.get(grade, 0)
+
+    payload = {
+        "product_id": product_id,
+        "grade": grade,
+        "quantity": quantity,
+        "discount_pct": discount
+    }
+
+    print(f"[INFO] Inventory update: {payload}")
+
+    # TODO: integrate with DESD API
+    # requests.post("http://localhost:8000/api/inventory/update/", json=payload)
+
+    return payload
 
 
 def save_model(model: tf.keras.Model, path: str = "models/best_model.keras") -> None:
     # Save trained model to disk
-    pass
+    print("debug statement - save_model")
+    os.makedirs("models", exist_ok=True)
+    model.save(path)
+    print(f"[INFO] Model saved to {path}")
 
 
 def load_model(path: str = "models/best_model.keras") -> tf.keras.Model:
     # Load and return a saved model
-    pass
+    print("debug statement - load_model")
+    model = tf.keras.models.load_model(path)
+    print(f"[INFO] Model loaded from {path}")
+    return model
 
 
 def main():
+    print("debug statement - main")
     df = load_dataset_metadata(DATASET_PATH)
     print(f"[INFO] Loaded {len(df)} images across {df['category'].nunique()} categories")
 
     explore_dataset(df)
 
     num_classes = df['label'].nunique()
-    fold_results = train_with_kfold(df, num_classes)
 
-    summary = summarise_kfold_results(fold_results)
-    print(summary)
+    print("\n[INFO] Training CNN...")
+    cnn_results, test_df = train_with_kfold(df, num_classes, model_type="cnn")
+    cnn_summary = summarise_kfold_results(cnn_results)
+
+    print("\n[INFO] Training ResNet50...")
+    resnet_results, _ = train_with_kfold(df, num_classes, model_type="resnet")
+    resnet_summary = summarise_kfold_results(resnet_results)
+
+    print("\n[INFO] CNN Summary:")
+    print(cnn_summary)
+    print("\n[INFO] ResNet50 Summary:")
+    print(resnet_summary)
 
     # TODO: load best model, evaluate on test set, run sample grading, save model
     print("[INFO] Pipeline complete.")
