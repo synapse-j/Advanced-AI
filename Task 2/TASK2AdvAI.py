@@ -99,7 +99,7 @@ def build_data_generators(augment: bool = True) -> ImageDataGenerator:
             vertical_flip=True,
         )
     else:
-        
+
         return ImageDataGenerator(
             rescale=1./255
         )
