@@ -22,9 +22,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 DATASET_PATH = Path(kagglehub.dataset_download("muhammad0subhan/fruit-and-vegetable-disease-healthy-vs-rotten"))
 IMG_HEIGHT = 224
 IMG_WIDTH = 224
-BATCH_SIZE = 64
-EPOCHS = 14
-N_FOLDS = 3
+BATCH_SIZE = 32
+EPOCHS = 9
+N_FOLDS = 5
 RANDOM_SEED = 42
 
 GRADE_THRESHOLDS = {
@@ -92,10 +92,6 @@ def build_data_generators(augment: bool = True) -> ImageDataGenerator:
             vertical_flip=True,
         )
     else:
-<<<<<<< HEAD
-=======
-
->>>>>>> 79d4f0fe7ca39e5fc4e251f86e7b7f0d6c61ed8c
         return ImageDataGenerator(
             rescale=1./255
         )
@@ -198,7 +194,7 @@ def train_with_kfold(df: pd.DataFrame, num_classes: int, model_type: str = "cnn"
 
         early_stop = callbacks.EarlyStopping(patience=5, restore_best_weights=True)
         checkpoint = callbacks.ModelCheckpoint(
-            f"models/fold_{fold}.keras", save_best_only=True, monitor="val_loss"
+            f"/home/ajnak/models/fold_{fold}.keras", save_best_only=True, monitor="val_loss"
         )
 
         history = model.fit(
@@ -377,7 +373,7 @@ def update_inventory(product_id: str, grade: str, quantity: int) -> dict:
     return payload
 
 
-def save_model(model: tf.keras.Model, path: str = "models/best_model.keras") -> None:
+def save_model(model: tf.keras.Model, path: str = "/home/ajnak/models/best_model.keras") -> None:
     # Save trained model to disk
     print("debug statement - save_model")
     os.makedirs("models", exist_ok=True)
@@ -385,7 +381,7 @@ def save_model(model: tf.keras.Model, path: str = "models/best_model.keras") -> 
     print(f"[INFO] Model saved to {path}")
 
 
-def load_model(path: str = "models/best_model.keras") -> tf.keras.Model:
+def load_model(path: str = "/home/ajnak/models/best_model.keras") -> tf.keras.Model:
     # Load and return a saved model
     print("debug statement - load_model")
     model = tf.keras.models.load_model(path)
@@ -415,7 +411,16 @@ def main():
     print("\n[INFO] ResNet50 Summary:")
     print(resnet_summary)
 
-    # TODO: load best model, evaluate on test set, run sample grading, save model
+    best_model = load_model("models/fold_2.keras")
+
+    test_gen = build_data_generators(augment=False)
+    test_data = test_gen.flow_from_dataframe(
+        test_df, x_col="filepath", y_col="condition",
+        target_size=(IMG_HEIGHT, IMG_WIDTH), batch_size=BATCH_SIZE, class_mode="categorical"
+    )
+
+    eval_results = evaluate_model(best_model, test_data)
+    save_model(best_model)
     print("[INFO] Pipeline complete.")
 
 
