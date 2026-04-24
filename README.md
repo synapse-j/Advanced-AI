@@ -16,7 +16,7 @@ Download Python 3.11 from: https://www.python.org/downloads/
 ### 1. Navigate to the Task 3 folder
 
 ```bash
-cd "C:\Users\Vinnie\Documents\Uni\AI_2\Advanced-AI\Task 3"
+cd "Task 3"
 ```
 
 ### 2. Create a virtual environment using Python 3.11
