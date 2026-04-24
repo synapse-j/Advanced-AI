@@ -192,7 +192,7 @@ def train_with_kfold(df: pd.DataFrame, num_classes: int, model_type: str = "cnn"
 
         model = build_cnn_model(num_classes, model_type=model_type)
 
-        early_stop = callbacks.EarlyStopping(patience=5, restore_best_weights=True)
+        early_stop = callbacks.EarlyStopping(patience=3, restore_best_weights=True)
         checkpoint = callbacks.ModelCheckpoint(
             f"/home/ajnak/models/fold_{fold}.keras", save_best_only=True, monitor="val_loss"
         )
