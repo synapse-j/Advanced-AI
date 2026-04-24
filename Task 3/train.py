@@ -5,8 +5,6 @@ and verified by the authors. Use of AI tools is declared in accordance with UWE
 Bristol's academic integrity guidelines for module UFCFUR-15-3.
 
 Task 3 — Standalone Model Training
-Module: UFCFUR-15-3 Advanced Artificial Intelligence
-Institution: UWE Bristol, 2025-26
 
 This file is COMPLETELY STANDALONE.  It has zero dependency on the DESD application
 or any other part of the project.  It reads images from the dataset/ folder sitting
