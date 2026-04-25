@@ -391,3 +391,9 @@ if __name__ == "__main__":
     top5 = sorted(result["all_probabilities"].items(), key=lambda x: x[1], reverse=True)[:5]
     for cls, prob in top5:
         print(f"    {cls}: {prob:.4f}")
+
+    # Save the overlay image so you can show it
+    import base64
+    img_bytes = base64.b64decode(result['gradcam_base64'])
+    with open('gradcam_output.png', 'wb') as f:
+        f.write(img_bytes)
