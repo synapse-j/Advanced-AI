@@ -63,8 +63,17 @@ venv\Scripts\pip install tensorflow opencv-python numpy pandas matplotlib seabor
 
 The trained model (`freshness_model.h5`) is already saved. You do not need to retrain.
 
+Examples 
 ```bash
-venv\Scripts\python model_service.py "dataset/Fruit And Vegetable Diseases Dataset/Apple__Healthy/FreshApple (1).jpg"
+# Fresh examples
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Healthy/FreshApple (1).jpg"
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Healthy/FreshBanana (1).jpg"
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Healthy/FreshTomato (1).jpg"
+
+# Rotten examples
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Rotten/RottenApple (1).jpg"
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Rotten/RottenBanana (1).jpg"
+venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Rotten/RottenTomato (1).jpg"
 ```
 
 Replace the image path with any image from the dataset folder.
