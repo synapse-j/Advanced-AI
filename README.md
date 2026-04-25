@@ -35,12 +35,6 @@ Download Python 3.11 from: https://www.python.org/downloads/
 
 ## Setup
 
-### 1. Navigate to the Task 3 folder
-
-```bash
-cd "Task 3"
-```
-
 ### 2. Create a virtual environment using Python 3.11
 
 ```bash
@@ -57,26 +51,29 @@ venv\Scripts\pip install tensorflow opencv-python numpy pandas matplotlib seabor
 
 ## Running the programs
 
-> **Important:** Always use `venv\Scripts\python` instead of `python` to ensure the correct Python version and installed packages are used.
+> **Important:** Always use `Task 3/venv/Scripts/python` instead of `python` to ensure the correct Python version and installed packages are used. Run all commands from the `Advanced-AI` root folder.
 
 ### Classify an image (model_service.py)
 
 The trained model (`freshness_model.h5`) is already saved. You do not need to retrain.
 
-Examples: 
+**Fresh examples:**
 ```bash
-# Fresh examples
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Healthy/FreshApple (1).jpg"
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Healthy/FreshBanana (1).jpg"
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Healthy/FreshTomato (1).jpg"
-
-# Rotten examples
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Rotten/RottenApple (1).jpg"
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Rotten/RottenBanana (1).jpg"
-venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Rotten/RottenTomato (1).jpg"
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Healthy/FreshApple (1).jpg"
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Healthy/FreshBanana (1).jpg"
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Healthy/FreshTomato (1).jpg"
 ```
 
-Replace the image path with any image from the dataset folder.
+**Rotten examples:**
+```bash
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Rotten/RottenApple (1).jpg"
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Banana__Rotten/RottenBanana (1).jpg"
+& "Task 3/venv/Scripts/python" "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Tomato__Rotten/RottenTomato (1).jpg"
+```
+
+Each command prints the predicted class, confidence, and explanation, and saves a Grad-CAM heatmap image to `gradcam_output.png` showing which regions of the image drove the decision.
+
+Replace the image path with any image from the dataset folder for more results.
 
 ### Retrain the model (train.py)
 
