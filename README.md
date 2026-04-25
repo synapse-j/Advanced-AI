@@ -104,7 +104,7 @@ venv\Scripts\python train.py
 The dataset should be placed at:
 
 ```
-Task 3/dataset/Fruit And Vegetable Diseases Dataset/<ClassName>/
+Task 3/dataset/Fruit And Vegetable Diseases Dataset
 ```
 
 Download from: https://www.kaggle.com/datasets/muhammad0subhan/fruit-and-vegetable-disease-healthy-vs-rotten
