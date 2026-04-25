@@ -63,7 +63,7 @@ venv\Scripts\pip install tensorflow opencv-python numpy pandas matplotlib seabor
 
 The trained model (`freshness_model.h5`) is already saved. You do not need to retrain.
 
-Examples 
+Examples: 
 ```bash
 # Fresh examples
 venv\Scripts\python "Task 3/model_service.py" "Task 3/dataset/Fruit And Vegetable Diseases Dataset/Apple__Healthy/FreshApple (1).jpg"
