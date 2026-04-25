@@ -1,3 +1,69 @@
+## Task 1: Intelligent Reorder Recommendation System
+
+Analyses customer purchase history to predict which items a user is likely to reorder, providing quick reorder suggestions with transparent reasoning.
+
+### Approach
+
+Three approaches were implemented and compared:
+
+1. **Frequency-based baseline:** recommends items by raw purchase count
+2. **Weighted RFM model:** scores items by Recency (30%), Frequency (50%), and Quantity (20%)
+3. **Random Forest classifier:** predicts reorder probability as a binary classification task
+
+### Results (5-fold stratified cross-validation)
+
+| Model | Accuracy | F1 |
+|---|---|---|
+| Logistic Regression | 0.711 | 0.689 |
+| Decision Tree | 0.687 | 0.703 |
+| **Random Forest** | **0.726** | **0.734** |
+| Gradient Boosting | 0.682 | 0.681 |
+
+Random Forest selected and tuned via `RandomizedSearchCV` (30 iterations). After tuning:
+
+| | F1 (macro) | ROC-AUC |
+|---|---|---|
+| Baseline RF | 0.755 | 0.817 |
+| **Tuned RF** | **0.772** | **0.824** |
+
+### Running the notebook
+
+Open `task1/task1_recommendation_FINAL.ipynb` in [Google Colab](https://colab.research.google.com) and run all cells. No additional setup required. All dependencies are available in the Colab environment.
+
+### Using the recommender module
+
+```python
+from recommender import get_recommendations
+
+recs = get_recommendations(user_id=1, top_n=3)
+for r in recs:
+    print(r['product_name'], r['reorder_probability'], '%')
+    print(r['reason'])
+```
+
+> **Note:** `reorder_model.pkl` and `task1_synthetic_orders.csv` must be in the same directory as `recommender.py`.
+
+### Features used
+
+| Feature | Description |
+|---|---|
+| `frequency` | Number of times the product was purchased |
+| `total_quantity` | Total units ordered |
+| `avg_quantity` | Average units per order |
+| `days_since_last_purchase` | Recency signal |
+| `last_purchase_month` | Seasonal signal |
+| `category_encoded` | Fruit or Vegetable |
+
+Random Forest selected and tuned via `RandomizedSearchCV` (30 iterations):
+
+| | F1 (macro) | ROC-AUC |
+|---|---|---|
+| Baseline RF | 0.755 | 0.817 |
+| **Tuned RF** | **0.772** | **0.824** |
+
+---
+
+
 ## Overview for task 3-4
 
 This folder implements Task 3 and Task 4:
