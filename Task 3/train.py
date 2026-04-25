@@ -1,8 +1,7 @@
 """
 AI Acknowledgement: Parts of this code were developed with assistance from AI tools
 including Claude (Anthropic). All AI-generated content has been reviewed, understood,
-and verified by the authors. Use of AI tools is declared in accordance with UWE
-Bristol's academic integrity guidelines for module UFCFUR-15-3.
+and verified by the authors. 
 
 Task 3 — Standalone Model Training
 
@@ -21,10 +20,6 @@ Dataset layout expected inside dataset/:
         ├── Apple__Rotten/
         ├── Banana__Healthy/
         ...
-
-Download the dataset from:
-    https://www.kaggle.com/datasets/muhammad0subhan/fruit-and-vegetable-disease-healthy-vs-rotten
-and extract it so the above layout exists relative to this file.
 
 Training uses two-phase transfer learning:
     Phase 1 — MobileNetV2 base frozen; only the Dense classification head is trained.
