@@ -1,3 +1,25 @@
+## Overview for task 3-4
+
+This folder implements Task 3 and Task 4:
+
+**Task 3** — A MobileNetV2 transfer learning model trained to classify 
+fruit and vegetables as fresh or rotten across multiple produce types. 
+The model is trained in two phases (frozen base → fine-tuned) and 
+evaluated with accuracy, precision, recall, F1, and a confusion matrix.
+
+**Task 4 (XAI)** — model_service.py implements Grad-CAM (Gradient-weighted 
+Class Activation Mapping) to explain every prediction. It highlights which 
+regions of the image (discolouration, bruising, mould) drove the fresh/rotten 
+decision, and generates a plain-English explanation suitable for producers 
+and marketplace operators. This satisfies the Fairness, Accountability and 
+Trust (FAT) requirements.
+
+### Key files
+- train.py — standalone training pipeline (run once to produce the model)
+- model_service.py — classification + Grad-CAM XAI (integration point for DESD)
+- freshness_model.h5 — pre-trained model (no retraining needed)
+- class_names.json — class list matching the model output layer
+- results/ — confusion matrix and training history plots
 
 
 
